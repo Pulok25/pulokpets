@@ -1,0 +1,50 @@
+@import "tailwindcss";
+
+@theme {
+  --color-aquatic-50: #f0fbff;
+  --color-aquatic-100: #e0f6fe;
+  --color-aquatic-200: #baeaff;
+  --color-aquatic-300: #7dd9ff;
+  --color-aquatic-400: #38c5f8;
+  --color-aquatic-500: #0ea5e9;
+  --color-aquatic-600: #0284c7;
+  --color-aquatic-700: #0369a1;
+  --color-aquatic-800: #075985;
+  --color-aquatic-900: #0c4a6e;
+  --color-aquatic-950: #082f49;
+}
+
+@layer base {
+  body {
+    @apply bg-slate-50 text-slate-900 antialiased overflow-x-hidden;
+    font-family: 'Inter', system-ui, sans-serif;
+    margin: 0;
+    padding: 0;
+  }
+}
+
+@layer components {
+  .btn-primary {
+    @apply inline-flex items-center justify-center px-6 py-3 rounded-full bg-aquatic-600 text-white font-medium transition-all duration-300 hover:bg-aquatic-500 hover:shadow-lg hover:-translate-y-0.5 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-aquatic-500;
+  }
+  
+  .btn-outline {
+    @apply inline-flex items-center justify-center px-6 py-3 rounded-full border-2 border-aquatic-600 text-aquatic-600 font-medium transition-all duration-300 hover:bg-aquatic-50 hover:shadow-lg hover:-translate-y-0.5 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-aquatic-500 bg-white/5 backdrop-blur-sm;
+  }
+
+  .nav-link {
+    @apply text-slate-600 hover:text-aquatic-600 font-medium transition-colors relative after:absolute after:bottom-0 after:left-0 after:w-0 after:h-0.5 after:bg-aquatic-600 hover:after:w-full after:transition-all after:duration-300;
+  }
+
+  .glass-card {
+    @apply bg-white/80 backdrop-blur-md border border-white/20 shadow-xl rounded-2xl overflow-hidden hover:shadow-2xl transition-all duration-500;
+  }
+
+  .text-gradient {
+    @apply bg-clip-text text-transparent bg-gradient-to-r from-aquatic-800 to-aquatic-500;
+  }
+}
+
+html {
+  scroll-behavior: smooth;
+}
