@@ -13,7 +13,7 @@ const Hero = () => {
           style={{ animationDuration: '20s' }}
         />
         <div className="absolute inset-0 bg-gradient-to-r from-slate-900/90 via-slate-900/60 to-transparent"></div>
-        <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-slate-50/90 hidden md:block"></div>
+        <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-slate-50/50 hidden md:block"></div>
       </div>
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 w-full h-full">

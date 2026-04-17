@@ -35,12 +35,19 @@ const Navbar = ({ cartCount, setView, currentView }) => {
             <a href="#categories" onClick={() => setView('store')} className={`font-medium transition-colors hover:text-aquatic-500 ${isScrolled ? 'text-slate-600' : 'text-white/90 hover:text-white'}`}>Shop Fish</a>
             <a href="#about" onClick={() => setView('store')} className={`font-medium transition-colors hover:text-aquatic-500 ${isScrolled ? 'text-slate-600' : 'text-white/90 hover:text-white'}`}>About Us</a>
             <a href="#contact" onClick={() => setView('store')} className={`font-medium transition-colors hover:text-aquatic-500 ${isScrolled ? 'text-slate-600' : 'text-white/90 hover:text-white'}`}>Contact</a>
-            {isAdminLoggedIn && (
+            {isAdminLoggedIn ? (
               <button 
                 onClick={() => setView('admin')} 
                 className={`font-bold transition-colors border-b-2 ${currentView === 'admin' ? 'border-aquatic-500 text-aquatic-500' : 'border-transparent hover:text-aquatic-500'} ${isScrolled && currentView !== 'admin' ? 'text-slate-600' : (currentView !== 'admin' ? 'text-white/90 hover:text-white' : '')}`}
               >
                 Dashboard
+              </button>
+            ) : (
+              <button
+                onClick={() => setIsLoginModalOpen(true)}
+                className={`font-medium transition-colors hover:text-aquatic-500 ${isScrolled ? 'text-slate-600' : 'text-white/90 hover:text-white'}`}
+              >
+                Admin Login
               </button>
             )}
           </div>
@@ -101,19 +108,16 @@ const Navbar = ({ cartCount, setView, currentView }) => {
             <a href="#categories" className="text-slate-600 hover:text-aquatic-600 font-medium px-2 py-1" onClick={() => { setIsMenuOpen(false); setView('store'); }}>Shop Fish</a>
             <a href="#about" className="text-slate-600 hover:text-aquatic-600 font-medium px-2 py-1" onClick={() => { setIsMenuOpen(false); setView('store'); }}>About Us</a>
             <a href="#contact" className="text-slate-600 hover:text-aquatic-600 font-medium px-2 py-1" onClick={() => { setIsMenuOpen(false); setView('store'); }}>Contact</a>
-            {isAdminLoggedIn && (
-              <button 
-                className="text-left text-aquatic-600 font-bold px-2 py-1" 
-                onClick={() => { setIsMenuOpen(false); setView('admin'); }}
-              >
-                Dashboard
-              </button>
+            {isAdminLoggedIn ? (
+              <button className="text-slate-600 hover:text-aquatic-600 font-medium px-2 py-1 text-left" onClick={() => { setIsMenuOpen(false); setView('admin'); }}>Dashboard</button>
+            ) : (
+              <button className="text-slate-600 hover:text-aquatic-600 font-medium px-2 py-1 text-left" onClick={() => { setIsMenuOpen(false); setIsLoginModalOpen(true); }}>Admin Login</button>
             )}
           </div>
         </div>
       )}
 
-      <LoginModal isOpen={isLoginModalOpen} onClose={() => setIsLoginModalOpen(false)} />
+      <LoginModal isOpen={isLoginModalOpen} onClose={() => setIsLoginModalOpen(false)} onLoginSuccess={() => setView('admin')} />
     </nav>
   );
 };

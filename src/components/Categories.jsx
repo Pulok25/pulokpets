@@ -16,86 +16,116 @@ const Categories = ({ onAddToCart }) => {
           </p>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-8">
           {inventory.map((category) => (
             <div key={category.id} className="group glass-card flex flex-col h-full bg-white hover:-translate-y-2 transition-transform duration-500 cursor-pointer shadow-xl shadow-slate-200/50">
-              <div className="relative h-64 overflow-hidden">
+              <div className="relative h-56 overflow-hidden">
                 <div className="absolute inset-0 bg-slate-900/20 group-hover:bg-transparent transition-colors z-10 duration-500"></div>
                 <img 
                   src={category.image} 
                   alt={category.title} 
-                  className="w-[400px] h-[300px] object-cover transform group-hover:scale-110 transition-transform duration-700 ease-out"
+                  className="w-full h-full object-cover transform group-hover:scale-110 transition-transform duration-700 ease-out"
                 />
                 <div className="absolute top-4 right-4 z-20 bg-white/90 backdrop-blur-sm px-3 py-1 rounded-full text-xs font-bold text-aquatic-700 shadow-sm">
                   {category.subcategories.reduce((total, sub) => total + (sub.types?.length > 0 ? sub.types.length : 1), 0)} Varieties
                 </div>
               </div>
               
-              <div className="p-8 flex flex-col flex-grow relative">
-                <h4 className="text-2xl font-bold text-slate-900 mb-3 group-hover:text-aquatic-600 transition-colors">
+              <div className="p-6 flex flex-col flex-grow relative">
+                <h4 className="text-2xl font-bold text-slate-900 mb-2 group-hover:text-aquatic-600 transition-colors">
                   {category.title}
                 </h4>
-                <p className="text-slate-600 mb-6 flex-grow leading-relaxed">
+                <p className="text-slate-500 text-sm mb-5 leading-relaxed">
                   {category.description}
                 </p>
-                <div className="pt-4 border-t border-slate-100 mt-auto">
-                  <span className="text-sm font-semibold text-slate-500 uppercase tracking-wider mb-3 block">Subcategories:</span>
-                  <div className="flex flex-col gap-3">
-                    {category.subcategories.map(sub => (
-                      <div key={sub.name} className="flex flex-col bg-slate-50 rounded-lg p-3">
-                        <div className="flex justify-between items-center">
-                          <div className="flex items-center gap-2">
-                            <span className={`text-sm font-bold ${sub.outOfStock ? 'text-slate-400 line-through' : 'text-slate-800'}`}>
-                              {sub.name}
-                            </span>
-                            {sub.price && <span className={`text-sm font-bold ${sub.outOfStock ? 'text-slate-400' : 'text-aquatic-600'}`}>${sub.price}</span>}
-                          </div>
 
-                          <div className="flex items-center gap-2">
-                            {(!sub.types || sub.types.length === 0) && (
+                <div className="pt-4 border-t border-slate-100 mt-auto flex flex-col gap-4">
+                  <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Available Varieties</span>
+
+                  {category.subcategories.map(sub => (
+                    <div key={sub.name}>
+                      {/* Subcategory with no sub-types (leaf product) */}
+                      {(!sub.types || sub.types.length === 0) && (
+                        <div className={`rounded-xl border p-4 flex flex-col gap-2 ${sub.outOfStock ? 'border-slate-200 bg-slate-50' : 'border-aquatic-100 bg-aquatic-50/40'}`}>
+                          <div className="flex items-start justify-between gap-2">
+                            <div className="flex-1 min-w-0">
+                              <p className={`font-bold text-sm ${sub.outOfStock ? 'text-slate-400 line-through' : 'text-slate-800'}`}>
+                                {sub.name}
+                              </p>
+                              {sub.description && (
+                                <p className="text-xs text-slate-500 mt-1 leading-relaxed">{sub.description}</p>
+                              )}
+                              {sub.size && (
+                                <span className="inline-flex items-center gap-1 mt-2 text-xs font-medium text-aquatic-700 bg-aquatic-100 px-2 py-0.5 rounded-full">
+                                  📏 {sub.size}
+                                </span>
+                              )}
+                            </div>
+                            <div className="flex flex-col items-end gap-2 shrink-0">
+                              {sub.price && (
+                                <span className={`text-lg font-extrabold ${sub.outOfStock ? 'text-slate-400' : 'text-aquatic-600'}`}>
+                                  ${sub.price}
+                                </span>
+                              )}
                               <button 
                                 disabled={sub.outOfStock}
                                 onClick={(e) => {
                                   e.stopPropagation();
                                   onAddToCart();
                                 }} 
-                                className={`px-3 py-1 rounded-md text-xs font-bold transition-colors ${sub.outOfStock ? 'bg-slate-200 text-slate-400 cursor-not-allowed' : 'bg-aquatic-100 text-aquatic-700 hover:bg-aquatic-500 hover:text-white'}`}
+                                className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-colors ${sub.outOfStock ? 'bg-slate-200 text-slate-400 cursor-not-allowed' : 'bg-aquatic-500 text-white hover:bg-aquatic-600'}`}
                               >
-                                {sub.outOfStock ? 'Out of Stock' : 'Add to Cart'}
+                                {sub.outOfStock ? 'Out of Stock' : '+ Cart'}
                               </button>
-                            )}
+                            </div>
                           </div>
                         </div>
+                      )}
 
-                        {sub.types && sub.types.length > 0 && (
-                          <div className="mt-2 flex flex-col gap-2 pl-4 border-l-2 border-slate-200">
+                      {/* Subcategory with child types */}
+                      {sub.types && sub.types.length > 0 && (
+                        <div className="rounded-xl border border-slate-100 bg-slate-50 overflow-hidden">
+                          <div className="px-4 py-2 bg-slate-100 border-b border-slate-200">
+                            <span className="text-xs font-bold uppercase tracking-widest text-slate-600">{sub.name}</span>
+                          </div>
+                          <div className="flex flex-col divide-y divide-slate-100">
                             {sub.types.map(type => (
-                              <div key={type.name} className="flex justify-between items-center">
-                                <div className="flex items-center gap-2 truncate">
-                                  <span className={`text-sm font-medium ${type.outOfStock ? 'text-slate-400 line-through' : 'text-slate-600'}`}>
+                              <div key={type.name} className="p-3 flex gap-3">
+                                <div className="flex-1 min-w-0">
+                                  <p className={`font-bold text-sm ${type.outOfStock ? 'text-slate-400 line-through' : 'text-slate-800'}`}>
                                     {type.name}
-                                  </span>
-                                  <span className={`text-sm font-bold ${type.outOfStock ? 'text-slate-400' : 'text-aquatic-600'}`}>${type.price}</span>
+                                  </p>
+                                  {type.description && (
+                                    <p className="text-xs text-slate-500 mt-0.5 leading-relaxed">{type.description}</p>
+                                  )}
+                                  {type.size && (
+                                    <span className="inline-flex items-center gap-1 mt-1.5 text-xs font-medium text-aquatic-700 bg-aquatic-100 px-2 py-0.5 rounded-full">
+                                      📏 {type.size}
+                                    </span>
+                                  )}
                                 </div>
-                                <div className="flex items-center gap-2 shrink-0">
+                                <div className="flex flex-col items-end gap-1.5 shrink-0">
+                                  <span className={`text-base font-extrabold ${type.outOfStock ? 'text-slate-400' : 'text-aquatic-600'}`}>
+                                    ${type.price}
+                                  </span>
                                   <button 
                                     disabled={type.outOfStock}
                                     onClick={(e) => {
                                       e.stopPropagation();
                                       onAddToCart();
                                     }} 
-                                    className={`px-2 py-1 rounded text-[10px] uppercase font-bold transition-colors ${type.outOfStock ? 'bg-slate-200 text-slate-400 cursor-not-allowed' : 'bg-aquatic-100 text-aquatic-700 hover:bg-aquatic-500 hover:text-white'}`}
+                                    className={`px-2 py-1 rounded text-[10px] uppercase font-bold transition-colors ${type.outOfStock ? 'bg-slate-200 text-slate-400 cursor-not-allowed' : 'bg-aquatic-500 text-white hover:bg-aquatic-600'}`}
                                   >
-                                    {type.outOfStock ? 'Out of Stock' : 'Add to Cart'}
+                                    {type.outOfStock ? 'Out of Stock' : '+ Cart'}
                                   </button>
                                 </div>
                               </div>
                             ))}
                           </div>
-                        )}
-                      </div>
-                    ))}
-                  </div>
+                        </div>
+                      )}
+                    </div>
+                  ))}
                 </div>
               </div>
             </div>

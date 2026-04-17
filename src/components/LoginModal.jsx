@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useAdmin } from '../context/AdminContext';
 import { X } from 'lucide-react';
 
-const LoginModal = ({ isOpen, onClose }) => {
+const LoginModal = ({ isOpen, onClose, onLoginSuccess }) => {
   const { login } = useAdmin();
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
@@ -18,6 +18,7 @@ const LoginModal = ({ isOpen, onClose }) => {
       setPassword('');
       setError('');
       onClose();
+      if (onLoginSuccess) onLoginSuccess();
     } else {
       setError('Invalid admin credentials.');
     }

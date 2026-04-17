@@ -3,7 +3,11 @@ import { useAdmin } from '../context/AdminContext';
 import { Package, AlertTriangle, Layers, Fish, Trash2, PowerOff, PlusCircle } from 'lucide-react';
 
 const AdminDashboard = () => {
-  const { inventory, removeFishType, toggleStock, addFishType } = useAdmin();
+  const { isAdminLoggedIn, inventory, removeFishType, toggleStock, addFishType } = useAdmin();
+
+  if (!isAdminLoggedIn) {
+    return null;
+  }
 
   const metrics = useMemo(() => {
     let totalCategories = inventory.length;
