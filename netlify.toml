@@ -2,6 +2,10 @@
   command = "npm run build"
   publish = "dist"
 
+# API routes should NOT be redirected to index.html
+# They will 404 on Netlify, which is expected until backend is deployed
+# Set VITE_API_URL environment variable to point to your deployed backend
+
 [[redirects]]
   from = "/*"
   to = "/index.html"

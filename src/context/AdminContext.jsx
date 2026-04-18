@@ -4,6 +4,13 @@ const AdminContext = createContext();
 
 export const useAdmin = () => useContext(AdminContext);
 
+// Get API base URL from environment, fallback to relative paths
+const API_BASE_URL = import.meta.env.VITE_API_URL || '';
+
+const apiUrl = (endpoint) => {
+  return `${API_BASE_URL}${endpoint}`;
+};
+
 const initialCategoriesData = [
   {
     id: 'polar-parrot',
@@ -144,7 +151,7 @@ export const AdminProvider = ({ children }) => {
 
   const loadInventory = async () => {
     try {
-      const response = await fetch('/api/inventory', { cache: 'no-cache' });
+      const response = await fetch(apiUrl('/api/inventory'), { cache: 'no-cache' });
       if (!response.ok) throw new Error('Failed to fetch inventory');
       const data = await response.json();
       setInventory(data);
@@ -156,7 +163,7 @@ export const AdminProvider = ({ children }) => {
 
   const loadChat = async () => {
     try {
-      const response = await fetch('/api/chat/threads', { cache: 'no-cache' });
+      const response = await fetch(apiUrl('/api/chat/threads'), { cache: 'no-cache' });
       if (!response.ok) throw new Error('Failed to fetch chat threads');
       const data = await response.json();
       setChatThreads(data);
@@ -205,7 +212,7 @@ export const AdminProvider = ({ children }) => {
   const addCategory = async (title, description = '', image = '') => {
     try {
       const id = slugifyId(title);
-      const response = await fetch('/api/inventory/category', {
+      const response = await fetch(apiUrl('/api/inventory/category'), {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ id, title, description, image })
@@ -220,7 +227,7 @@ export const AdminProvider = ({ children }) => {
 
   const removeCategory = async (categoryId) => {
     try {
-      const response = await fetch('/api/inventory/category', {
+      const response = await fetch(apiUrl('/api/inventory/category'), {
         method: 'DELETE',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ categoryId })
@@ -235,7 +242,7 @@ export const AdminProvider = ({ children }) => {
 
   const updateCategory = async (categoryId, title, description = '', image = '') => {
     try {
-      const response = await fetch('/api/inventory/category', {
+      const response = await fetch(apiUrl('/api/inventory/category'), {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ categoryId, title, description, image })
@@ -250,7 +257,7 @@ export const AdminProvider = ({ children }) => {
 
   const addSubcategory = async (categoryId, name, price, description = '', size = '') => {
     try {
-      const response = await fetch('/api/inventory/subcategory', {
+      const response = await fetch(apiUrl('/api/inventory/subcategory'), {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ categoryId, name, price, description, size })
@@ -265,7 +272,7 @@ export const AdminProvider = ({ children }) => {
 
   const removeSubcategory = async (categoryId, subcategoryId) => {
     try {
-      const response = await fetch('/api/inventory/subcategory', {
+      const response = await fetch(apiUrl('/api/inventory/subcategory'), {
         method: 'DELETE',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ categoryId, subcategoryId })
@@ -280,7 +287,7 @@ export const AdminProvider = ({ children }) => {
 
   const resetInventory = async () => {
     try {
-      const response = await fetch('/api/inventory/reset', { method: 'POST' });
+      const response = await fetch(apiUrl('/api/inventory/reset'), { method: 'POST' });
       if (!response.ok) throw new Error('Reset failed');
       const data = await response.json();
       setInventory(data);
@@ -292,7 +299,7 @@ export const AdminProvider = ({ children }) => {
 
   const sendCustomerMessage = async (threadId, customerName, customerEmail, text) => {
     try {
-      const response = await fetch('/api/chat/message', {
+      const response = await fetch(apiUrl('/api/chat/message'), {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ threadId, customerName, customerEmail, text })
@@ -309,7 +316,7 @@ export const AdminProvider = ({ children }) => {
 
   const sendAdminReply = async (threadId, text) => {
     try {
-      const response = await fetch('/api/chat/reply', {
+      const response = await fetch(apiUrl('/api/chat/reply'), {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ threadId, text })
@@ -326,7 +333,7 @@ export const AdminProvider = ({ children }) => {
 
   const addFishType = async (categoryId, subcategoryName, newTypeName, price, description = '', size = '') => {
     try {
-      const response = await fetch('/api/inventory/type', {
+      const response = await fetch(apiUrl('/api/inventory/type'), {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ categoryId, subcategoryName, newTypeName, price, description, size })
@@ -341,7 +348,7 @@ export const AdminProvider = ({ children }) => {
 
   const removeFishType = async (categoryId, subcategoryName, typeName) => {
     try {
-      const response = await fetch('/api/inventory/type', {
+      const response = await fetch(apiUrl('/api/inventory/type'), {
         method: 'DELETE',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ categoryId, subcategoryName, typeName })
