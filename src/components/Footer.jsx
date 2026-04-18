@@ -1,7 +1,10 @@
 import React from 'react';
 import { Fish, Mail, Phone, MapPin } from 'lucide-react';
+import { useAdmin } from '../context/AdminContext';
 
 const Footer = () => {
+  const { inventory } = useAdmin();
+  const featuredCategories = inventory.filter(cat => cat.featured);
   return (
     <footer id="contact" className="bg-slate-900 border-t border-slate-800 pt-16 pb-8">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -20,7 +23,7 @@ const Footer = () => {
               Your premium destination for stunning freshwater fish. We specialize in ethically raised, high-quality aquatic life delivered right to your door.
             </p>
             <div className="flex space-x-4">
-              <a href="#" className="h-10 w-10 flex items-center justify-center rounded-full bg-slate-800 text-aquatic-400 font-bold hover:bg-aquatic-600 hover:text-white transition-all">
+              <a href="" className="h-10 w-10 flex items-center justify-center rounded-full bg-slate-800 text-aquatic-400 font-bold hover:bg-aquatic-600 hover:text-white transition-all">
                 FB
               </a>
               <a href="#" className="h-10 w-10 flex items-center justify-center rounded-full bg-slate-800 text-aquatic-400 font-bold hover:bg-aquatic-600 hover:text-white transition-all">
@@ -35,11 +38,13 @@ const Footer = () => {
           <div>
             <h4 className="text-lg font-semibold text-white mb-6">Categories</h4>
             <ul className="space-y-4">
-              <li><a href="#categories" className="text-slate-400 hover:text-aquatic-400 transition-colors">Community Fish</a></li>
-              <li><a href="#categories" className="text-slate-400 hover:text-aquatic-400 transition-colors">Premium Bettas</a></li>
-              <li><a href="#categories" className="text-slate-400 hover:text-aquatic-400 transition-colors">Monster Fish</a></li>
-              <li><a href="#" className="text-slate-400 hover:text-aquatic-400 transition-colors">Live Plants</a></li>
-              <li><a href="#" className="text-slate-400 hover:text-aquatic-400 transition-colors">Aquarium Supplies</a></li>
+              {featuredCategories.map(category => (
+                <li key={category.id}>
+                  <a href="#categories" className="text-slate-400 hover:text-aquatic-400 transition-colors">
+                    {category.title}
+                  </a>
+                </li>
+              ))}
             </ul>
           </div>
 

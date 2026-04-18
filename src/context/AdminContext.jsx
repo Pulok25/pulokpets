@@ -143,7 +143,7 @@ export const AdminProvider = ({ children }) => {
 
   const loadInventory = async () => {
     try {
-      const response = await fetch('/api/inventory');
+      const response = await fetch('/api/inventory', { cache: 'no-cache' });
       if (!response.ok) throw new Error('Failed to fetch inventory');
       const data = await response.json();
       setInventory(data);

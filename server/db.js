@@ -5,70 +5,9 @@ const dbPath = path.resolve('./server/inventory.json');
 
 // Initial data structure
 const initialData = {
-  categories: [
-    {
-      id: 'polar-parrot',
-      title: 'Polar Parrot',
-      description: 'Strikingly beautiful hybrid cichlids with vibrant body colors, peaceful temperament, and a unique rounded shape — a centerpiece for any aquarium.',
-      image: 'https://images.unsplash.com/photo-1544943910-4c1dc44aab44?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80',
-      outOfStock: false,
-      featured: false
-    },
-    {
-      id: 'gourami',
-      title: 'Gourami',
-      description: 'Graceful labyrinth fish celebrated for their vibrant patterns and gentle personalities, ideal for planted community tanks.',
-      image: 'https://images.unsplash.com/photo-1520302519878-e0e14e5b3dba?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80',
-      outOfStock: false,
-      featured: false
-    },
-    {
-      id: 'community',
-      title: 'Community Fish',
-      description: 'Peaceful, vibrant additions perfect for your mixed-species aquarium setup.',
-      image: '/community.jpg',
-      outOfStock: false,
-      featured: false
-    },
-    {
-      id: 'betta',
-      title: 'Premium Bettas',
-      description: 'Majestic centerpieces known for their breathtaking colors and flowing fins.',
-      image: '/public/halfmoon.jpg',
-      outOfStock: false,
-      featured: false
-    },
-    {
-      id: 'monster',
-      title: 'Monster Fish',
-      description: 'Bold, charismatic giants for the dedicated and experienced aquarist.',
-      image: 'https://images.unsplash.com/photo-1582967788606-a171c1080cb0?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80',
-      outOfStock: false,
-      featured: false
-    }
-  ],
-  subcategories: [
-    { id: 1, categoryId: 'polar-parrot', name: 'Blue Polar Parrot', description: 'A rare Blue-colored Polar Parrot Cichlid', size: '5–7 cm', price: 28.99, outOfStock: false },
-    { id: 2, categoryId: 'polar-parrot', name: 'White Polar Parrot', description: 'An elegant all-white Polar Parrot Cichlid', size: '5–7 cm', price: 26.99, outOfStock: false },
-    { id: 3, categoryId: 'gourami', name: 'Dwarf Gourami', description: 'A compact, brilliantly colored Gourami', size: '4–5 cm', price: 12.99, outOfStock: false },
-    { id: 4, categoryId: 'gourami', name: 'Kissing Gourami', description: 'Famous for their kissing behavior', size: '12–15 cm', price: 18.99, outOfStock: false },
-    { id: 5, categoryId: 'community', name: 'Guppy', description: 'Colorful and peaceful', size: '3–4 cm', price: 9.99, outOfStock: false },
-    { id: 6, categoryId: 'community', name: 'Molly', description: 'Hardy and peaceful', size: '5–6 cm', price: 6.99, outOfStock: false },
-    { id: 7, categoryId: 'community', name: 'Red Platty', description: 'Vibrant red-colored Platy', size: '4–6 cm', price: 6.99, outOfStock: false },
-    { id: 8, categoryId: 'community', name: 'Swordtail Platty', description: 'Striking with sword-like tail', size: '5–7 cm', price: 8.99, outOfStock: false },
-    { id: 9, categoryId: 'betta', name: 'Halfmoon Betta', description: 'Perfect 180-degree tail spread', size: '5–7 cm', price: 24.99, outOfStock: false },
-    { id: 10, categoryId: 'betta', name: 'Full Moon Betta', description: 'Even fuller tail spread', size: '5–7 cm', price: 34.99, outOfStock: false },
-    { id: 11, categoryId: 'betta', name: 'Plakat Betta', description: 'Short-finned fighting form', size: '4–6 cm', price: 19.99, outOfStock: false },
-    { id: 12, categoryId: 'monster', name: 'Cichlid', description: 'Highly intelligent and territorial', size: '15–30 cm', price: 19.99, outOfStock: false },
-    { id: 13, categoryId: 'monster', name: 'Oscar', description: 'Personable and intelligent fish', size: '25–35 cm', price: 22.99, outOfStock: false }
-  ],
-  types: [
-    { id: 1, subcategoryId: 1, name: 'Dumbo Ear', description: 'Famous for oversized pectoral fins', size: '3–4 cm', price: 9.99, outOfStock: false },
-    { id: 2, subcategoryId: 1, name: 'Red Moscow', description: 'Deep crimson full-body guppy', size: '3–5 cm', price: 14.99, outOfStock: false },
-    { id: 3, subcategoryId: 1, name: 'Black Moscow', description: 'All-black Moscow guppy', size: '3–5 cm', price: 15.99, outOfStock: false },
-    { id: 4, subcategoryId: 2, name: 'Balloon Molly', description: 'Round-bodied with balloon-like belly', size: '5–6 cm', price: 6.99, outOfStock: false },
-    { id: 5, subcategoryId: 2, name: 'Marble Molly', description: 'Beautiful marble-patterned', size: '5–7 cm', price: 5.99, outOfStock: false }
-  ]
+  categories: [],
+  subcategories: [],
+  types: []
 };
 
 let inventory = null;
