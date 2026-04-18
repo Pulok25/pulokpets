@@ -64,7 +64,7 @@ const Categories = ({ onAddToCart }) => {
                             <div className="flex flex-col items-end gap-2 shrink-0">
                               {sub.price && (
                                 <span className={`text-lg font-extrabold ${sub.outOfStock ? 'text-slate-400' : 'text-aquatic-600'}`}>
-                                  ${sub.price}
+                                  ৳{sub.price}
                                 </span>
                               )}
                               <button 
@@ -106,7 +106,7 @@ const Categories = ({ onAddToCart }) => {
                                 </div>
                                 <div className="flex flex-col items-end gap-1.5 shrink-0">
                                   <span className={`text-base font-extrabold ${type.outOfStock ? 'text-slate-400' : 'text-aquatic-600'}`}>
-                                    ${type.price}
+                                    ৳{type.price}
                                   </span>
                                   <button 
                                     disabled={type.outOfStock}

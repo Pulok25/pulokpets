@@ -188,6 +188,56 @@ app.patch('/api/inventory/featured', (req, res) => {
   }
 });
 
+app.get('/api/chat/threads', (req, res) => {
+  try {
+    res.json(db.getChatThreads());
+  } catch (error) {
+    console.error('Failed to load chat threads:', error);
+    res.status(500).json({ error: 'Failed to load chat threads' });
+  }
+});
+
+app.post('/api/chat/message', (req, res) => {
+  const { threadId, customerName, customerEmail, text } = req.body;
+  if (!text || (!threadId && (!customerName || !customerEmail))) {
+    return res.status(400).json({ error: 'Missing required fields' });
+  }
+
+  try {
+    let thread;
+    if (threadId) {
+      thread = db.addCustomerMessage({ threadId, text });
+    } else {
+      thread = db.addChatThread({ customerName, customerEmail, text });
+    }
+    if (!thread) {
+      return res.status(400).json({ error: 'Unable to save chat message' });
+    }
+    res.json(thread);
+  } catch (error) {
+    console.error('Failed to save chat message:', error);
+    res.status(500).json({ error: 'Failed to save chat message' });
+  }
+});
+
+app.post('/api/chat/reply', (req, res) => {
+  const { threadId, text } = req.body;
+  if (!threadId || !text) {
+    return res.status(400).json({ error: 'Missing required fields' });
+  }
+
+  try {
+    const thread = db.addAdminReply({ threadId, text });
+    if (!thread) {
+      return res.status(400).json({ error: 'Unable to send reply' });
+    }
+    res.json(thread);
+  } catch (error) {
+    console.error('Failed to send reply:', error);
+    res.status(500).json({ error: 'Failed to send reply' });
+  }
+});
+
 app.delete('/api/inventory/all', (req, res) => {
   try {
     db.deleteAllCategories();

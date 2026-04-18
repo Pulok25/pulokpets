@@ -2,6 +2,7 @@ import fs from 'fs';
 import path from 'path';
 
 const dbPath = path.resolve('./server/inventory.json');
+const chatPath = path.resolve('./server/chat.json');
 
 // Initial data structure
 const initialData = {
@@ -11,6 +12,7 @@ const initialData = {
 };
 
 let inventory = null;
+let chatThreads = null;
 
 // Load inventory from JSON
 const loadInventory = () => {
@@ -28,6 +30,21 @@ const loadInventory = () => {
   }
 };
 
+const loadChat = () => {
+  try {
+    if (fs.existsSync(chatPath)) {
+      const chatData = fs.readFileSync(chatPath, 'utf-8');
+      chatThreads = JSON.parse(chatData).threads || [];
+    } else {
+      chatThreads = [];
+      saveChat();
+    }
+  } catch (error) {
+    console.error('Error loading chat data:', error);
+    chatThreads = [];
+  }
+};
+
 // Save inventory to JSON
 const saveInventory = () => {
   try {
@@ -35,6 +52,53 @@ const saveInventory = () => {
   } catch (error) {
     console.error('Error saving inventory:', error);
   }
+};
+
+const saveChat = () => {
+  try {
+    fs.writeFileSync(chatPath, JSON.stringify({ threads: chatThreads }, null, 2));
+  } catch (error) {
+    console.error('Error saving chat data:', error);
+  }
+};
+
+const addChatThread = ({ customerName, customerEmail, text }) => {
+  const id = Math.max(...chatThreads.map(t => t.id), 0) + 1;
+  const thread = {
+    id,
+    customerName,
+    customerEmail,
+    createdAt: new Date().toISOString(),
+    messages: [
+      {
+        id: 1,
+        sender: 'customer',
+        text,
+        createdAt: new Date().toISOString()
+      }
+    ]
+  };
+  chatThreads.push(thread);
+  saveChat();
+  return thread;
+};
+
+const addCustomerMessage = ({ threadId, text }) => {
+  const thread = chatThreads.find(t => t.id === threadId);
+  if (!thread) return null;
+  const messageId = Math.max(...thread.messages.map(m => m.id), 0) + 1;
+  thread.messages.push({ id: messageId, sender: 'customer', text, createdAt: new Date().toISOString() });
+  saveChat();
+  return thread;
+};
+
+const addAdminReply = ({ threadId, text }) => {
+  const thread = chatThreads.find(t => t.id === threadId);
+  if (!thread) return null;
+  const messageId = Math.max(...thread.messages.map(m => m.id), 0) + 1;
+  thread.messages.push({ id: messageId, sender: 'admin', text, createdAt: new Date().toISOString() });
+  saveChat();
+  return thread;
 };
 
 // Format inventory for API response
@@ -66,6 +130,7 @@ const formatInventory = () => {
 
 // Initialize
 loadInventory();
+loadChat();
 
 // Export functions
 export default {
@@ -182,6 +247,22 @@ export default {
     cat.featured = !cat.featured;
     saveInventory();
     return true;
+  },
+
+  getChatThreads: () => {
+    return chatThreads;
+  },
+
+  addChatThread: ({ customerName, customerEmail, text }) => {
+    return addChatThread({ customerName, customerEmail, text });
+  },
+
+  addCustomerMessage: ({ threadId, text }) => {
+    return addCustomerMessage({ threadId, text });
+  },
+
+  addAdminReply: ({ threadId, text }) => {
+    return addAdminReply({ threadId, text });
   },
 
   deleteAllCategories: () => {

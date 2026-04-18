@@ -34,6 +34,7 @@ const Navbar = ({ cartCount, setView, currentView }) => {
             <a href="#home" onClick={() => setView('store')} className={`font-medium transition-colors hover:text-aquatic-500 ${isScrolled ? 'text-slate-600' : 'text-white/90 hover:text-white'}`}>Home</a>
             <a href="#categories" onClick={() => setView('store')} className={`font-medium transition-colors hover:text-aquatic-500 ${isScrolled ? 'text-slate-600' : 'text-white/90 hover:text-white'}`}>Shop Fish</a>
             <a href="#about" onClick={() => setView('store')} className={`font-medium transition-colors hover:text-aquatic-500 ${isScrolled ? 'text-slate-600' : 'text-white/90 hover:text-white'}`}>About Us</a>
+            <a href="#faq" onClick={() => setView('store')} className={`font-medium transition-colors hover:text-aquatic-500 ${isScrolled ? 'text-slate-600' : 'text-white/90 hover:text-white'}`}>FAQ</a>
             <a href="#contact" onClick={() => setView('store')} className={`font-medium transition-colors hover:text-aquatic-500 ${isScrolled ? 'text-slate-600' : 'text-white/90 hover:text-white'}`}>Contact</a>
             {isAdminLoggedIn ? (
               <button 
@@ -107,6 +108,7 @@ const Navbar = ({ cartCount, setView, currentView }) => {
             <a href="#home" className="text-slate-600 hover:text-aquatic-600 font-medium px-2 py-1" onClick={() => { setIsMenuOpen(false); setView('store'); }}>Home</a>
             <a href="#categories" className="text-slate-600 hover:text-aquatic-600 font-medium px-2 py-1" onClick={() => { setIsMenuOpen(false); setView('store'); }}>Shop Fish</a>
             <a href="#about" className="text-slate-600 hover:text-aquatic-600 font-medium px-2 py-1" onClick={() => { setIsMenuOpen(false); setView('store'); }}>About Us</a>
+            <a href="#faq" className="text-slate-600 hover:text-aquatic-600 font-medium px-2 py-1" onClick={() => { setIsMenuOpen(false); setView('store'); }}>FAQ</a>
             <a href="#contact" className="text-slate-600 hover:text-aquatic-600 font-medium px-2 py-1" onClick={() => { setIsMenuOpen(false); setView('store'); }}>Contact</a>
             {isAdminLoggedIn ? (
               <button className="text-slate-600 hover:text-aquatic-600 font-medium px-2 py-1 text-left" onClick={() => { setIsMenuOpen(false); setView('admin'); }}>Dashboard</button>

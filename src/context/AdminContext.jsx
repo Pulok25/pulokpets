@@ -140,6 +140,7 @@ export const AdminProvider = ({ children }) => {
   });
 
   const [inventory, setInventory] = useState(initialCategoriesData);
+  const [chatThreads, setChatThreads] = useState([]);
 
   const loadInventory = async () => {
     try {
@@ -153,12 +154,27 @@ export const AdminProvider = ({ children }) => {
     }
   };
 
+  const loadChat = async () => {
+    try {
+      const response = await fetch('/api/chat/threads', { cache: 'no-cache' });
+      if (!response.ok) throw new Error('Failed to fetch chat threads');
+      const data = await response.json();
+      setChatThreads(data);
+    } catch (error) {
+      console.error('Failed to load chat threads:', error);
+      setChatThreads([]);
+    }
+  };
+
   useEffect(() => {
     localStorage.setItem('isAdminLoggedIn', isAdminLoggedIn);
   }, [isAdminLoggedIn]);
 
   useEffect(() => {
     loadInventory();
+    loadChat();
+    const chatInterval = setInterval(loadChat, 3000);
+    return () => clearInterval(chatInterval);
   }, []);
 
   const slugifyId = (text) => {
@@ -172,7 +188,10 @@ export const AdminProvider = ({ children }) => {
   };
 
   const login = (username, password) => {
-    if (username === 'akib63' && password === '785651') {
+    const normalizedUsername = username.trim().toLowerCase();
+    const normalizedPassword = password.trim();
+
+    if (normalizedUsername === 'akib63' && normalizedPassword === '785651') {
       setIsAdminLoggedIn(true);
       return true;
     }
@@ -271,6 +290,40 @@ export const AdminProvider = ({ children }) => {
     }
   };
 
+  const sendCustomerMessage = async (threadId, customerName, customerEmail, text) => {
+    try {
+      const response = await fetch('/api/chat/message', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ threadId, customerName, customerEmail, text })
+      });
+      if (!response.ok) throw new Error('Send customer message failed');
+      const thread = await response.json();
+      await loadChat();
+      return { threadId: thread.id };
+    } catch (error) {
+      console.error('Send customer message failed:', error);
+      return null;
+    }
+  };
+
+  const sendAdminReply = async (threadId, text) => {
+    try {
+      const response = await fetch('/api/chat/reply', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ threadId, text })
+      });
+      if (!response.ok) throw new Error('Send admin reply failed');
+      const thread = await response.json();
+      await loadChat();
+      return thread;
+    } catch (error) {
+      console.error('Send admin reply failed:', error);
+      return null;
+    }
+  };
+
   const addFishType = async (categoryId, subcategoryName, newTypeName, price, description = '', size = '') => {
     try {
       const response = await fetch('/api/inventory/type', {
@@ -361,7 +414,11 @@ export const AdminProvider = ({ children }) => {
       toggleStock,
       toggleFeatured,
       deleteAllCategories,
-      resetInventory
+      resetInventory,
+      chatThreads,
+      loadChat,
+      sendCustomerMessage,
+      sendAdminReply
     }}>
       {children}
     </AdminContext.Provider>

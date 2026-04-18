@@ -5,6 +5,8 @@ import FeaturedProducts from './components/FeaturedProducts';
 import Categories from './components/Categories';
 import Footer from './components/Footer';
 import AdminDashboard from './components/AdminDashboard';
+import FAQ from './components/FAQ';
+import Contact from './components/Contact';
 import { AdminProvider, useAdmin } from './context/AdminContext';
 
 function AppContent() {
@@ -40,6 +42,8 @@ function AppContent() {
             <Hero />
             <FeaturedProducts onAddToCart={handleAddToCart} />
             <Categories onAddToCart={handleAddToCart} />
+            <FAQ />
+            <Contact />
           </>
         )}
       </main>

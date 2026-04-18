@@ -1,11 +1,13 @@
-import React, { useMemo, useState } from 'react';
+import React, { useMemo, useState, useEffect } from 'react';
 import { useAdmin } from '../context/AdminContext';
-import { Package, AlertTriangle, Layers, Fish, Trash2, PowerOff, PlusCircle, X, Star } from 'lucide-react';
+import { Package, AlertTriangle, Layers, Fish, Trash2, PowerOff, PlusCircle, X, Star, Send } from 'lucide-react';
 
 const AdminDashboard = () => {
-  const { isAdminLoggedIn, inventory, removeFishType, toggleStock, addFishType, addCategory, updateCategory, removeCategory, addSubcategory, removeSubcategory, toggleFeatured, deleteAllCategories, logout } = useAdmin();
+  const { isAdminLoggedIn, inventory, chatThreads, sendAdminReply, removeFishType, toggleStock, addFishType, addCategory, updateCategory, removeCategory, addSubcategory, removeSubcategory, toggleFeatured, deleteAllCategories, logout } = useAdmin();
 
   const [isAddCategoryModalOpen, setIsAddCategoryModalOpen] = useState(false);
+  const [selectedThreadId, setSelectedThreadId] = useState(null);
+  const [replyMessage, setReplyMessage] = useState('');
   const [addCategoryForm, setAddCategoryForm] = useState({ title: '', description: '', image: '' });
   const [isEditCategoryModalOpen, setIsEditCategoryModalOpen] = useState(false);
   const [editCategoryForm, setEditCategoryForm] = useState({ id: '', title: '', description: '', image: '' });
@@ -102,6 +104,22 @@ const AdminDashboard = () => {
       return;
     }
     addFishType(categoryId, subcategoryName, name, price);
+  };
+
+  useEffect(() => {
+    if (!selectedThreadId && chatThreads.length > 0) {
+      setSelectedThreadId(chatThreads[0].id);
+    }
+  }, [chatThreads, selectedThreadId]);
+
+  const handleSelectThread = (threadId) => {
+    setSelectedThreadId(threadId);
+  };
+
+  const handleSendReply = async () => {
+    if (!replyMessage.trim() || selectedThreadId == null) return;
+    await sendAdminReply(selectedThreadId, replyMessage.trim());
+    setReplyMessage('');
   };
 
   const metrics = useMemo(() => {
@@ -242,6 +260,70 @@ const AdminDashboard = () => {
         ))}
       </div>
 
+      {/* Customer Chat */}
+      <div className="grid grid-cols-1 xl:grid-cols-3 gap-6 mb-12">
+        <div className="xl:col-span-1 bg-white rounded-3xl border border-slate-100 shadow-sm p-6">
+          <h2 className="text-lg font-bold text-slate-900 mb-4">Incoming Contacts</h2>
+          <div className="space-y-3 max-h-[420px] overflow-y-auto pr-1">
+            {chatThreads.length === 0 && (
+              <p className="text-slate-500">No customer conversations yet. New messages will appear here.</p>
+            )}
+            {chatThreads.map(thread => (
+              <button
+                key={thread.id}
+                onClick={() => handleSelectThread(thread.id)}
+                className={`w-full text-left rounded-3xl p-4 border ${selectedThreadId === thread.id ? 'border-aquatic-500 bg-aquatic-50 shadow-sm' : 'border-slate-200 bg-white hover:border-slate-300'} transition-colors`}
+              >
+                <p className="font-semibold text-slate-900">{thread.customerName}</p>
+                <p className="text-sm text-slate-500">{thread.customerEmail}</p>
+                <p className="text-xs text-slate-400 mt-2">Latest: {new Date(thread.messages[thread.messages.length - 1].createdAt).toLocaleString()}</p>
+              </button>
+            ))}
+          </div>
+        </div>
+
+        <div className="xl:col-span-2 bg-white rounded-3xl border border-slate-100 shadow-sm p-6">
+          <h2 className="text-lg font-bold text-slate-900 mb-4">Active Conversation</h2>
+          {!selectedThreadId && (
+            <div className="rounded-3xl border border-dashed border-slate-200 p-10 text-center text-slate-500">
+              Select a customer message to reply from the left panel.
+            </div>
+          )}
+          {selectedThreadId && (
+            <div className="space-y-6">
+              {chatThreads.find(thread => thread.id === selectedThreadId)?.messages.map((msg) => (
+                <div key={msg.id} className={`rounded-3xl p-5 ${msg.sender === 'admin' ? 'bg-aquatic-50 border border-aquatic-100 text-slate-900' : 'bg-slate-100 border border-slate-200 text-slate-900'}`}>
+                  <div className="flex items-center justify-between text-xs text-slate-500 mb-2">
+                    <span>{msg.sender === 'admin' ? 'Seller Reply' : 'Customer Message'}</span>
+                    <span>{new Date(msg.createdAt).toLocaleString()}</span>
+                  </div>
+                  <p>{msg.text}</p>
+                </div>
+              ))}
+
+              <div className="space-y-3">
+                <textarea
+                  value={replyMessage}
+                  onChange={(e) => setReplyMessage(e.target.value)}
+                  rows={4}
+                  className="w-full rounded-3xl border border-slate-200 px-4 py-3 text-sm text-slate-900 outline-none focus:border-aquatic-500 focus:ring-2 focus:ring-aquatic-100"
+                  placeholder="Write your reply to the customer"
+                />
+                <div className="flex flex-wrap items-center gap-3 justify-between">
+                  <p className="text-sm text-slate-500">Admin replies are added to the active conversation.</p>
+                  <button
+                    onClick={handleSendReply}
+                    className="inline-flex items-center gap-2 rounded-full bg-aquatic-600 px-5 py-3 text-sm font-semibold text-white hover:bg-aquatic-500 transition-colors"
+                  >
+                    <Send size={16} /> Send Reply
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
+
       {/* Inventory Management Table */}
       <div className="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden">
         <div className="px-6 py-5 border-b border-slate-100 flex justify-between items-center bg-slate-50">
@@ -272,7 +354,7 @@ const AdminDashboard = () => {
                             {subIdx === 0 ? <span className="font-bold text-slate-900">{cat.title}</span> : <span className="text-slate-400">"</span>}
                           </td>
                           <td className="px-6 py-4 font-medium text-slate-700">{sub.name}</td>
-                          <td className="px-6 py-4 text-slate-500 italic">Base Type - ${sub.price}</td>
+                            <td className="px-6 py-4 text-slate-500 italic">Base Type - ৳{sub.price}</td>
                           <td className="px-6 py-4">
                             <span className={`inline-flex px-2 py-1 rounded-full text-xs font-bold ${sub.outOfStock ? 'bg-red-100 text-red-700' : 'bg-green-100 text-green-700'}`}>
                               {sub.outOfStock ? 'Out of Stock' : 'In Stock'}
@@ -318,7 +400,7 @@ const AdminDashboard = () => {
                             <td className="px-6 py-4 font-medium text-slate-700">
                               {typeIdx === 0 ? sub.name : <span className="text-slate-300 ml-4 font-normal">↳</span>}
                             </td>
-                            <td className="px-6 py-4 text-slate-900 font-medium">{type.name} <span className="text-aquatic-600 ml-2">${type.price}</span></td>
+                            <td className="px-6 py-4 text-slate-900 font-medium">{type.name} <span className="text-aquatic-600 ml-2">৳{type.price}</span></td>
                             <td className="px-6 py-4">
                               <span className={`inline-flex px-2 py-1 rounded-full text-xs font-bold ${type.outOfStock ? 'bg-red-100 text-red-700' : 'bg-green-100 text-green-700'}`}>
                                 {type.outOfStock ? 'Out of Stock' : 'In Stock'}
