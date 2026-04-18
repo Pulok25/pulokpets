@@ -23,7 +23,7 @@ const Hero = () => {
              Premium Aquatic Life Delivery
           </div>
           
-          <h1 className="text-5xl md:text-7xl font-extrabold text-white leading-tight mb-6 tracking-tight">
+          <h1 className="text-4xl sm:text-5xl md:text-7xl font-extrabold text-white leading-tight mb-6 tracking-tight">
             Dive Into <span className="text-transparent bg-clip-text bg-gradient-to-r from-aquatic-300 to-aquatic-500">Living Art.</span>
           </h1>
           
@@ -41,7 +41,7 @@ const Hero = () => {
             </a>
           </div>
           
-          <div className="mt-16 grid grid-cols-3 gap-6 pt-8 border-t border-white/10">
+          <div className="mt-16 grid grid-cols-1 sm:grid-cols-3 gap-6 pt-8 border-t border-white/10">
             <div>
               <div className="text-3xl font-bold text-white mb-1">100+</div>
               <div className="text-xs text-aquatic-300 uppercase tracking-wider font-semibold">Species Available</div>

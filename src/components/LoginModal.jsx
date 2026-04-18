@@ -26,7 +26,7 @@ const LoginModal = ({ isOpen, onClose, onLoginSuccess }) => {
 
   return (
     <div className="fixed inset-0 z-[100] flex items-center justify-center bg-slate-900/50 backdrop-blur-sm">
-      <div className="bg-white rounded-2xl w-full max-w-md p-8 relative shadow-2xl">
+      <div className="bg-white rounded-2xl w-full max-w-md sm:max-w-lg mx-4 sm:mx-auto p-8 relative shadow-2xl">
         <button 
           onClick={onClose}
           className="absolute top-4 right-4 p-2 text-slate-400 hover:text-slate-700 bg-slate-100 hover:bg-slate-200 rounded-full transition-colors"

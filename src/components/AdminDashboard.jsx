@@ -1,13 +1,108 @@
-import React, { useMemo } from 'react';
+import React, { useMemo, useState } from 'react';
 import { useAdmin } from '../context/AdminContext';
-import { Package, AlertTriangle, Layers, Fish, Trash2, PowerOff, PlusCircle } from 'lucide-react';
+import { Package, AlertTriangle, Layers, Fish, Trash2, PowerOff, PlusCircle, X, Star } from 'lucide-react';
 
 const AdminDashboard = () => {
-  const { isAdminLoggedIn, inventory, removeFishType, toggleStock, addFishType } = useAdmin();
+  const { isAdminLoggedIn, inventory, removeFishType, toggleStock, addFishType, addCategory, updateCategory, removeCategory, addSubcategory, removeSubcategory, toggleFeatured, deleteAllCategories, logout } = useAdmin();
+
+  const [isAddCategoryModalOpen, setIsAddCategoryModalOpen] = useState(false);
+  const [addCategoryForm, setAddCategoryForm] = useState({ title: '', description: '', image: '' });
+  const [isEditCategoryModalOpen, setIsEditCategoryModalOpen] = useState(false);
+  const [editCategoryForm, setEditCategoryForm] = useState({ id: '', title: '', description: '', image: '' });
+  
+  const [isAddSubcategoryModalOpen, setIsAddSubcategoryModalOpen] = useState(false);
+  const [selectedCategoryId, setSelectedCategoryId] = useState(null);
+  const [addSubcategoryForm, setAddSubcategoryForm] = useState({ name: '', description: '', size: '', price: '0' });
 
   if (!isAdminLoggedIn) {
     return null;
   }
+
+  const handleAddCategorySubmit = () => {
+    if (!addCategoryForm.title.trim()) {
+      alert('Category title is required');
+      return;
+    }
+    addCategory(addCategoryForm.title, addCategoryForm.description, addCategoryForm.image);
+    setAddCategoryForm({ title: '', description: '', image: '' });
+    setIsAddCategoryModalOpen(false);
+  };
+
+  const handleAddSubcategorySubmit = () => {
+    if (!addSubcategoryForm.name.trim()) {
+      alert('Subcategory name is required');
+      return;
+    }
+    if (isNaN(addSubcategoryForm.price)) {
+      alert('Invalid price');
+      return;
+    }
+    addSubcategory(selectedCategoryId, addSubcategoryForm.name, parseFloat(addSubcategoryForm.price), addSubcategoryForm.description, addSubcategoryForm.size);
+    setAddSubcategoryForm({ name: '', description: '', size: '', price: '0' });
+    setIsAddSubcategoryModalOpen(false);
+  };
+
+  const handleOpenAddSubcategoryModal = (categoryId) => {
+    setSelectedCategoryId(categoryId);
+    setIsAddSubcategoryModalOpen(true);
+  };
+
+  const handleOpenEditCategoryModal = (category) => {
+    setEditCategoryForm({
+      id: category.id,
+      title: category.title,
+      description: category.description || '',
+      image: category.image || ''
+    });
+    setIsEditCategoryModalOpen(true);
+  };
+
+  const handleCategoryFileChange = (event, isEdit = false) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      const imageData = e.target.result;
+      if (isEdit) {
+        setEditCategoryForm(prev => ({ ...prev, image: imageData }));
+      } else {
+        setAddCategoryForm(prev => ({ ...prev, image: imageData }));
+      }
+    };
+    reader.readAsDataURL(file);
+  };
+
+  const handleUpdateCategorySubmit = () => {
+    if (!editCategoryForm.title.trim()) {
+      alert('Category title is required');
+      return;
+    }
+    updateCategory(editCategoryForm.id, editCategoryForm.title, editCategoryForm.description, editCategoryForm.image);
+    setEditCategoryForm({ id: '', title: '', description: '', image: '' });
+    setIsEditCategoryModalOpen(false);
+  };
+
+  const handleRemoveCategory = (categoryId) => {
+    if (!window.confirm('Delete this category and all its subcategories?')) return;
+    removeCategory(categoryId);
+  };
+
+  const handleRemoveSubcategory = (categoryId, subcategoryId) => {
+    if (!window.confirm('Delete this subcategory and all its types?')) return;
+    removeSubcategory(categoryId, subcategoryId);
+  };
+
+  const handleAddFish = (categoryId, subcategoryName) => {
+    const name = window.prompt(`Enter new fish variant name for ${subcategoryName}:`);
+    if (!name) return;
+    const price = window.prompt(`Enter price for ${name}:`, '10.99');
+    if (!price || isNaN(price)) {
+      alert("Invalid price.");
+      return;
+    }
+    addFishType(categoryId, subcategoryName, name, price);
+  };
 
   const metrics = useMemo(() => {
     let totalCategories = inventory.length;
@@ -33,22 +128,39 @@ const AdminDashboard = () => {
     return { totalCategories, totalSubcategories, totalVarieties, outOfStockVarieties };
   }, [inventory]);
 
-  const handleAddFish = (categoryId, subcategoryName) => {
-    const name = window.prompt(`Enter new fish variant name for ${subcategoryName}:`);
-    if (!name) return;
-    const price = window.prompt(`Enter price for ${name}:`, '10.99');
-    if (!price || isNaN(price)) {
-      alert("Invalid price.");
-      return;
-    }
-    addFishType(categoryId, subcategoryName, name, price);
-  };
-
   return (
     <div className="pt-28 pb-24 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto min-h-screen">
       <div className="mb-10">
-        <h1 className="text-3xl font-bold text-slate-900">Admin Dashboard</h1>
-        <p className="text-slate-600 mt-2">Manage your inventory, categories, and stock availability.</p>
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+          <div>
+            <h1 className="text-3xl font-bold text-slate-900">Admin Dashboard</h1>
+            <p className="text-slate-600 mt-2">Manage your inventory, categories, and stock availability.</p>
+          </div>
+          <div className="flex flex-wrap gap-3">
+            <button
+              onClick={() => setIsAddCategoryModalOpen(true)}
+              className="inline-flex items-center justify-center rounded-full bg-aquatic-600 px-5 py-3 text-sm font-semibold text-white transition-colors hover:bg-aquatic-500"
+            >
+              Add Category
+            </button>
+            <button
+              onClick={() => {
+                if (window.confirm('Delete ALL categories and all their data? This cannot be undone!')) {
+                  deleteAllCategories();
+                }
+              }}
+              className="inline-flex items-center justify-center rounded-full bg-red-600 px-5 py-3 text-sm font-semibold text-white transition-colors hover:bg-red-500"
+            >
+              Delete All
+            </button>
+            <button
+              onClick={logout}
+              className="inline-flex items-center justify-center rounded-full border border-slate-200 bg-white px-5 py-3 text-sm font-semibold text-slate-700 transition-colors hover:bg-slate-50"
+            >
+              Logout
+            </button>
+          </div>
+        </div>
       </div>
 
       {/* Metrics Row */}
@@ -83,6 +195,53 @@ const AdminDashboard = () => {
         </div>
       </div>
 
+      {/* Category Cards */}
+      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6 mb-12">
+        {inventory.map(category => (
+          <div key={category.id} className="bg-white rounded-3xl shadow-lg border border-slate-100 overflow-hidden">
+            <div className="relative h-52 overflow-hidden bg-slate-100">
+              <img
+                src={category.image || 'https://via.placeholder.com/640x360?text=No+Image'}
+                alt={category.title}
+                className="h-full w-full object-cover transition-transform duration-500 hover:scale-105"
+              />
+              <div className="absolute inset-0 bg-gradient-to-t from-slate-900/80 via-slate-900/20 to-transparent" />
+              <div className="absolute left-5 bottom-5 text-white">
+                <p className="text-sm uppercase tracking-[0.2em] text-white/80">Category</p>
+                <h3 className="text-2xl font-bold">{category.title}</h3>
+              </div>
+            </div>
+            <div className="p-6 space-y-4">
+              <p className="text-slate-600 text-sm leading-6">{category.description || 'No description provided yet.'}</p>
+              <div className="flex items-center justify-between text-sm text-slate-500">
+                <span>{category.subcategories.length} subcategories</span>
+                <span>{category.subcategories.reduce((count, sub) => count + (sub.types && sub.types.length > 0 ? sub.types.length : 1), 0)} varieties</span>
+              </div>
+              <div className="flex flex-wrap gap-2">
+                <button
+                  onClick={() => handleOpenEditCategoryModal(category)}
+                  className="inline-flex items-center gap-2 rounded-full border border-slate-200 px-4 py-2 text-slate-700 hover:bg-slate-50 transition-colors"
+                >
+                  Edit
+                </button>
+                <button
+                  onClick={() => handleOpenAddSubcategoryModal(category.id)}
+                  className="inline-flex items-center gap-2 rounded-full border border-slate-200 px-4 py-2 text-aquatic-700 hover:bg-aquatic-50 transition-colors"
+                >
+                  Add Subcategory
+                </button>
+                <button
+                  onClick={() => handleRemoveCategory(category.id)}
+                  className="inline-flex items-center gap-2 rounded-full border border-rose-200 bg-rose-50 px-4 py-2 text-rose-600 hover:bg-rose-100 transition-colors"
+                >
+                  Delete
+                </button>
+              </div>
+            </div>
+          </div>
+        ))}
+      </div>
+
       {/* Inventory Management Table */}
       <div className="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden">
         <div className="px-6 py-5 border-b border-slate-100 flex justify-between items-center bg-slate-50">
@@ -93,11 +252,11 @@ const AdminDashboard = () => {
           <table className="w-full text-left border-collapse">
             <thead>
               <tr className="bg-slate-50 text-slate-500 text-sm border-b border-slate-100">
-                <th className="px-6 py-4 font-semibold font-bold">Category</th>
-                <th className="px-6 py-4 font-semibold font-bold">Subcategory</th>
-                <th className="px-6 py-4 font-semibold font-bold">Variety / Fish Type</th>
-                <th className="px-6 py-4 font-semibold font-bold">Status</th>
-                <th className="px-6 py-4 font-semibold font-bold text-right">Actions</th>
+                <th className="px-6 py-4 font-bold">Category</th>
+                <th className="px-6 py-4 font-bold">Subcategory</th>
+                <th className="px-6 py-4 font-bold">Variety / Fish Type</th>
+                <th className="px-6 py-4 font-bold">Status</th>
+                <th className="px-6 py-4 font-bold text-right">Actions</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100">
@@ -120,13 +279,29 @@ const AdminDashboard = () => {
                             </span>
                           </td>
                           <td className="px-6 py-4 text-right">
-                            <div className="flex justify-end gap-2">
+                            <div className="flex justify-end gap-2 flex-wrap">
                               <button onClick={() => handleAddFish(cat.id, sub.name)} className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors" title="Add Variety">
                                 <PlusCircle size={16} />
+                              </button>
+                              <button onClick={() => handleOpenAddSubcategoryModal(cat.id)} className="p-2 text-slate-600 hover:bg-slate-100 rounded-lg transition-colors" title="Add Subcategory">
+                                +
                               </button>
                               <button onClick={() => toggleStock(cat.id, sub.name)} className={`p-2 rounded-lg transition-colors ${sub.outOfStock ? 'text-green-600 hover:bg-green-50' : 'text-amber-600 hover:bg-amber-50'}`} title="Toggle Stock">
                                 <PowerOff size={16} />
                               </button>
+                              <button onClick={() => handleRemoveSubcategory(cat.id, sub.id)} className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors" title="Delete Subcategory">
+                                <Trash2 size={16} />
+                              </button>
+                              {subIdx === 0 && (
+                                <>
+                                  <button onClick={() => toggleFeatured(cat.id)} className={`p-2 rounded-lg transition-colors ${cat.featured ? 'text-yellow-500 hover:bg-yellow-50' : 'text-slate-400 hover:bg-slate-100'}`} title={cat.featured ? 'Remove from Featured' : 'Add to Featured'}>
+                                    <Star size={16} fill={cat.featured ? 'currentColor' : 'none'} />
+                                  </button>
+                                  <button onClick={() => handleRemoveCategory(cat.id)} className="p-2 text-rose-600 hover:bg-rose-50 rounded-lg transition-colors" title="Delete Category">
+                                    <Trash2 size={16} />
+                                  </button>
+                                </>
+                              )}
                             </div>
                           </td>
                         </tr>
@@ -150,16 +325,26 @@ const AdminDashboard = () => {
                               </span>
                             </td>
                             <td className="px-6 py-4 text-right border-l border-slate-50">
-                              <div className="flex justify-end gap-2">
+                              <div className="flex justify-end gap-2 flex-wrap">
                                 {typeIdx === 0 && (
-                                  <button onClick={() => handleAddFish(cat.id, sub.name)} className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors" title="Add another variety to this Subcategory">
-                                    <PlusCircle size={16} />
+                                  <button onClick={() => handleOpenAddSubcategoryModal(cat.id)} className="p-2 text-slate-600 hover:bg-slate-100 rounded-lg transition-colors" title="Add Subcategory">
+                                    +
+                                  </button>
+                                )}
+                                {typeIdx === 0 && (
+                                  <button onClick={() => handleRemoveSubcategory(cat.id, sub.id)} className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors" title="Delete Subcategory">
+                                    <Trash2 size={16} />
+                                  </button>
+                                )}
+                                {subIdx === 0 && typeIdx === 0 && (
+                                  <button onClick={() => handleRemoveCategory(cat.id)} className="p-2 text-rose-600 hover:bg-rose-50 rounded-lg transition-colors" title="Delete Category">
+                                    <Trash2 size={16} />
                                   </button>
                                 )}
                                 <button onClick={() => toggleStock(cat.id, sub.name, type.name)} className={`p-2 rounded-lg transition-colors ${type.outOfStock ? 'text-green-600 hover:bg-green-50' : 'text-amber-600 hover:bg-amber-50'}`} title="Toggle Stock">
                                   <PowerOff size={16} />
                                 </button>
-                                <button onClick={() => removeFishType(cat.id, sub.name, type.name)} className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors" title="Remove">
+                                <button onClick={() => removeFishType(cat.id, sub.name, type.name)} className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors" title="Remove Variety">
                                   <Trash2 size={16} />
                                 </button>
                               </div>
@@ -175,6 +360,243 @@ const AdminDashboard = () => {
           </table>
         </div>
       </div>
+
+      {/* Add Category Modal */}
+      {isAddCategoryModalOpen && (
+        <div className="fixed inset-0 z-100 flex items-center justify-center bg-slate-900/50 backdrop-blur-sm">
+          <div className="bg-white rounded-2xl w-full max-w-md sm:max-w-lg mx-4 sm:mx-auto p-8 relative shadow-2xl">
+            <button 
+              onClick={() => setIsAddCategoryModalOpen(false)}
+              className="absolute top-4 right-4 p-2 text-slate-400 hover:text-slate-700 bg-slate-100 hover:bg-slate-200 rounded-full transition-colors"
+            >
+              <X size={20} />
+            </button>
+            
+            <div className="text-center mb-8">
+              <h3 className="text-2xl font-bold text-slate-900">Add New Category</h3>
+              <p className="text-slate-500 mt-2">Create a new fish category.</p>
+            </div>
+
+            <div className="flex flex-col gap-4">
+              <div>
+                <label className="block text-sm font-bold text-slate-700 mb-1">Category Title *</label>
+                <input 
+                  type="text" 
+                  value={addCategoryForm.title}
+                  onChange={e => setAddCategoryForm({ ...addCategoryForm, title: e.target.value })}
+                  className="w-full px-4 py-3 rounded-lg border border-slate-200 focus:border-aquatic-500 focus:ring-2 focus:ring-aquatic-500/20 outline-none transition-all"
+                  placeholder="e.g., Tropical Tetras"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-bold text-slate-700 mb-1">Description</label>
+                <textarea 
+                  value={addCategoryForm.description}
+                  onChange={e => setAddCategoryForm({ ...addCategoryForm, description: e.target.value })}
+                  className="w-full px-4 py-3 rounded-lg border border-slate-200 focus:border-aquatic-500 focus:ring-2 focus:ring-aquatic-500/20 outline-none transition-all"
+                  placeholder="Describe this category..."
+                  rows="3"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-bold text-slate-700 mb-1">Image URL</label>
+                <input 
+                  type="text" 
+                  value={addCategoryForm.image}
+                  onChange={e => setAddCategoryForm({ ...addCategoryForm, image: e.target.value })}
+                  className="w-full px-4 py-3 rounded-lg border border-slate-200 focus:border-aquatic-500 focus:ring-2 focus:ring-aquatic-500/20 outline-none transition-all"
+                  placeholder="https://example.com/image.jpg"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-bold text-slate-700 mb-1">Upload Image</label>
+                <input
+                  type="file"
+                  accept="image/*"
+                  onChange={(e) => handleCategoryFileChange(e, false)}
+                  className="w-full text-sm text-slate-600"
+                />
+              </div>
+              {addCategoryForm.image && (
+                <div className="rounded-2xl overflow-hidden border border-slate-200">
+                  <img src={addCategoryForm.image} alt="Preview" className="w-full h-48 object-cover" />
+                </div>
+              )}
+              <div className="flex gap-3 mt-4">
+                <button 
+                  onClick={() => setIsAddCategoryModalOpen(false)}
+                  className="flex-1 px-4 py-3 rounded-lg border border-slate-200 text-slate-700 font-semibold hover:bg-slate-50 transition-colors"
+                >
+                  Cancel
+                </button>
+                <button 
+                  onClick={handleAddCategorySubmit}
+                  className="flex-1 px-4 py-3 rounded-lg bg-slate-900 text-white font-semibold hover:bg-aquatic-600 transition-colors"
+                >
+                  Add Category
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Edit Category Modal */}
+      {isEditCategoryModalOpen && (
+        <div className="fixed inset-0 z-100 flex items-center justify-center bg-slate-900/50 backdrop-blur-sm">
+          <div className="bg-white rounded-2xl w-full max-w-md sm:max-w-lg mx-4 sm:mx-auto p-8 relative shadow-2xl">
+            <button 
+              onClick={() => setIsEditCategoryModalOpen(false)}
+              className="absolute top-4 right-4 p-2 text-slate-400 hover:text-slate-700 bg-slate-100 hover:bg-slate-200 rounded-full transition-colors"
+            >
+              <X size={20} />
+            </button>
+            
+            <div className="text-center mb-8">
+              <h3 className="text-2xl font-bold text-slate-900">Edit Category</h3>
+              <p className="text-slate-500 mt-2">Update category details, description, and image.</p>
+            </div>
+
+            <div className="flex flex-col gap-4">
+              <div>
+                <label className="block text-sm font-bold text-slate-700 mb-1">Category Title *</label>
+                <input 
+                  type="text" 
+                  value={editCategoryForm.title}
+                  onChange={e => setEditCategoryForm({ ...editCategoryForm, title: e.target.value })}
+                  className="w-full px-4 py-3 rounded-lg border border-slate-200 focus:border-aquatic-500 focus:ring-2 focus:ring-aquatic-500/20 outline-none transition-all"
+                  placeholder="e.g., Tropical Tetras"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-bold text-slate-700 mb-1">Description</label>
+                <textarea 
+                  value={editCategoryForm.description}
+                  onChange={e => setEditCategoryForm({ ...editCategoryForm, description: e.target.value })}
+                  className="w-full px-4 py-3 rounded-lg border border-slate-200 focus:border-aquatic-500 focus:ring-2 focus:ring-aquatic-500/20 outline-none transition-all"
+                  placeholder="Describe this category..."
+                  rows="3"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-bold text-slate-700 mb-1">Image URL</label>
+                <input 
+                  type="text" 
+                  value={editCategoryForm.image}
+                  onChange={e => setEditCategoryForm({ ...editCategoryForm, image: e.target.value })}
+                  className="w-full px-4 py-3 rounded-lg border border-slate-200 focus:border-aquatic-500 focus:ring-2 focus:ring-aquatic-500/20 outline-none transition-all"
+                  placeholder="https://example.com/image.jpg"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-bold text-slate-700 mb-1">Upload Image</label>
+                <input
+                  type="file"
+                  accept="image/*"
+                  onChange={(e) => handleCategoryFileChange(e, true)}
+                  className="w-full text-sm text-slate-600"
+                />
+              </div>
+              {editCategoryForm.image && (
+                <div className="rounded-2xl overflow-hidden border border-slate-200">
+                  <img src={editCategoryForm.image} alt="Preview" className="w-full h-48 object-cover" />
+                </div>
+              )}
+              <div className="flex gap-3 mt-4">
+                <button 
+                  onClick={() => setIsEditCategoryModalOpen(false)}
+                  className="flex-1 px-4 py-3 rounded-lg border border-slate-200 text-slate-700 font-semibold hover:bg-slate-50 transition-colors"
+                >
+                  Cancel
+                </button>
+                <button 
+                  onClick={handleUpdateCategorySubmit}
+                  className="flex-1 px-4 py-3 rounded-lg bg-slate-900 text-white font-semibold hover:bg-aquatic-600 transition-colors"
+                >
+                  Save Changes
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Add Subcategory Modal */}
+      {isAddSubcategoryModalOpen && (
+        <div className="fixed inset-0 z-100 flex items-center justify-center bg-slate-900/50 backdrop-blur-sm">
+          <div className="bg-white rounded-2xl w-full max-w-md sm:max-w-lg mx-4 sm:mx-auto p-8 relative shadow-2xl">
+            <button 
+              onClick={() => setIsAddSubcategoryModalOpen(false)}
+              className="absolute top-4 right-4 p-2 text-slate-400 hover:text-slate-700 bg-slate-100 hover:bg-slate-200 rounded-full transition-colors"
+            >
+              <X size={20} />
+            </button>
+            
+            <div className="text-center mb-8">
+              <h3 className="text-2xl font-bold text-slate-900">Add New Subcategory</h3>
+              <p className="text-slate-500 mt-2">Add a fish variant to this category.</p>
+            </div>
+
+            <div className="flex flex-col gap-4">
+              <div>
+                <label className="block text-sm font-bold text-slate-700 mb-1">Subcategory Name *</label>
+                <input 
+                  type="text" 
+                  value={addSubcategoryForm.name}
+                  onChange={e => setAddSubcategoryForm({ ...addSubcategoryForm, name: e.target.value })}
+                  className="w-full px-4 py-3 rounded-lg border border-slate-200 focus:border-aquatic-500 focus:ring-2 focus:ring-aquatic-500/20 outline-none transition-all"
+                  placeholder="e.g., Red Tetra"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-bold text-slate-700 mb-1">Price *</label>
+                <input 
+                  type="number" 
+                  step="0.01"
+                  value={addSubcategoryForm.price}
+                  onChange={e => setAddSubcategoryForm({ ...addSubcategoryForm, price: e.target.value })}
+                  className="w-full px-4 py-3 rounded-lg border border-slate-200 focus:border-aquatic-500 focus:ring-2 focus:ring-aquatic-500/20 outline-none transition-all"
+                  placeholder="0.00"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-bold text-slate-700 mb-1">Description</label>
+                <textarea 
+                  value={addSubcategoryForm.description}
+                  onChange={e => setAddSubcategoryForm({ ...addSubcategoryForm, description: e.target.value })}
+                  className="w-full px-4 py-3 rounded-lg border border-slate-200 focus:border-aquatic-500 focus:ring-2 focus:ring-aquatic-500/20 outline-none transition-all"
+                  placeholder="Describe this subcategory..."
+                  rows="2"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-bold text-slate-700 mb-1">Size</label>
+                <input 
+                  type="text" 
+                  value={addSubcategoryForm.size}
+                  onChange={e => setAddSubcategoryForm({ ...addSubcategoryForm, size: e.target.value })}
+                  className="w-full px-4 py-3 rounded-lg border border-slate-200 focus:border-aquatic-500 focus:ring-2 focus:ring-aquatic-500/20 outline-none transition-all"
+                  placeholder="e.g., 5-7 cm"
+                />
+              </div>
+              <div className="flex gap-3 mt-4">
+                <button 
+                  onClick={() => setIsAddSubcategoryModalOpen(false)}
+                  className="flex-1 px-4 py-3 rounded-lg border border-slate-200 text-slate-700 font-semibold hover:bg-slate-50 transition-colors"
+                >
+                  Cancel
+                </button>
+                <button 
+                  onClick={handleAddSubcategorySubmit}
+                  className="flex-1 px-4 py-3 rounded-lg bg-slate-900 text-white font-semibold hover:bg-aquatic-600 transition-colors"
+                >
+                  Add Subcategory
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

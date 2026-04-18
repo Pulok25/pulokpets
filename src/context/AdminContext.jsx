@@ -161,8 +161,18 @@ export const AdminProvider = ({ children }) => {
     loadInventory();
   }, []);
 
+  const slugifyId = (text) => {
+    return text
+      .toString()
+      .trim()
+      .toLowerCase()
+      .replace(/\s+/g, '-')
+      .replace(/[^a-z0-9-]/g, '')
+      .replace(/--+/g, '-');
+  };
+
   const login = (username, password) => {
-    if (username === 'admin' && password === 'admin') {
+    if (username === 'akib63' && password === '785651') {
       setIsAdminLoggedIn(true);
       return true;
     }
@@ -171,6 +181,82 @@ export const AdminProvider = ({ children }) => {
 
   const logout = () => {
     setIsAdminLoggedIn(false);
+  };
+
+  const addCategory = async (title, description = '', image = '') => {
+    try {
+      const id = slugifyId(title);
+      const response = await fetch('/api/inventory/category', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id, title, description, image })
+      });
+      if (!response.ok) throw new Error('Add category failed');
+      const data = await response.json();
+      setInventory(data);
+    } catch (error) {
+      console.error('Add category failed:', error);
+    }
+  };
+
+  const removeCategory = async (categoryId) => {
+    try {
+      const response = await fetch('/api/inventory/category', {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ categoryId })
+      });
+      if (!response.ok) throw new Error('Remove category failed');
+      const data = await response.json();
+      setInventory(data);
+    } catch (error) {
+      console.error('Remove category failed:', error);
+    }
+  };
+
+  const updateCategory = async (categoryId, title, description = '', image = '') => {
+    try {
+      const response = await fetch('/api/inventory/category', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ categoryId, title, description, image })
+      });
+      if (!response.ok) throw new Error('Update category failed');
+      const data = await response.json();
+      setInventory(data);
+    } catch (error) {
+      console.error('Update category failed:', error);
+    }
+  };
+
+  const addSubcategory = async (categoryId, name, price, description = '', size = '') => {
+    try {
+      const response = await fetch('/api/inventory/subcategory', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ categoryId, name, price, description, size })
+      });
+      if (!response.ok) throw new Error('Add subcategory failed');
+      const data = await response.json();
+      setInventory(data);
+    } catch (error) {
+      console.error('Add subcategory failed:', error);
+    }
+  };
+
+  const removeSubcategory = async (categoryId, subcategoryId) => {
+    try {
+      const response = await fetch('/api/inventory/subcategory', {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ categoryId, subcategoryId })
+      });
+      if (!response.ok) throw new Error('Remove subcategory failed');
+      const data = await response.json();
+      setInventory(data);
+    } catch (error) {
+      console.error('Remove subcategory failed:', error);
+    }
   };
 
   const resetInventory = async () => {
@@ -230,15 +316,51 @@ export const AdminProvider = ({ children }) => {
     }
   };
 
+  const toggleFeatured = async (categoryId) => {
+    try {
+      const response = await fetch('/api/inventory/featured', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ categoryId })
+      });
+      if (!response.ok) throw new Error('Toggle featured failed');
+      const data = await response.json();
+      setInventory(data);
+    } catch (error) {
+      console.error('Toggle featured failed:', error);
+    }
+  };
+
+  const deleteAllCategories = async () => {
+    try {
+      const response = await fetch('/api/inventory/all', {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' }
+      });
+      if (!response.ok) throw new Error('Delete all failed');
+      const data = await response.json();
+      setInventory(data);
+    } catch (error) {
+      console.error('Delete all failed:', error);
+    }
+  };
+
   return (
     <AdminContext.Provider value={{
       isAdminLoggedIn,
       login,
       logout,
       inventory,
+      addCategory,
+      removeCategory,
+      addSubcategory,
+      removeSubcategory,
+      updateCategory,
       addFishType,
       removeFishType,
       toggleStock,
+      toggleFeatured,
+      deleteAllCategories,
       resetInventory
     }}>
       {children}
